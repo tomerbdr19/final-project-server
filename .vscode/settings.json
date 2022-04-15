@@ -1,0 +1,10 @@
+{
+    "appService.zipIgnorePattern": ["node_modules{,/**}", ".vscode{,/**}"],
+    "appService.defaultWebAppToDeploy": "/subscriptions/08d5a1d2-a1ac-42b6-ad01-a65142678acc/resourceGroups/final-project/providers/Microsoft.Web/sites/final-project-server-tbak",
+    "appService.deploySubpath": ".",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true
+      },
+      "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"]
+}
