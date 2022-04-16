@@ -1,33 +1,55 @@
 import { IController } from '@/types/Controller';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Auth } from '../models';
+import passport from 'passport';
+import { generateJwt, hashPassword, jwtAuth } from '../utils/auth';
+import { Auth, User } from '../models';
 
 export class AuthController implements IController {
   path: string = '/auth';
   router: Router = Router();
 
-  constructor () {
+  constructor() {
     this.initRoutes();
   }
 
-  private initRoutes () {
+  private initRoutes() {
     this.router.post(`${this.path}/login`, this.login);
-    this.router.post(`${this.path}/update-password`, this.updatePassword);
-    this.router.post(`${this.path}/set-credentials`, this.setCredentials);
+    this.router.post(`${this.path}/register`, this.register);
+    this.router.post(`${this.path}/update-password`, jwtAuth, this.updatePassword);
+    this.router.post(`${this.path}/set-credentials`, jwtAuth, this.setCredentials);
   }
 
-  private readonly login = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+  private readonly login = async (
+    req: Request,
+    res: Response
+  ) => {
+    passport.authenticate('local', function (error, token) {
+      if (error || !token) {
+        console.log(error);
+        return res.status(error.status).json({ error });
+      }
 
-    return await Auth.findOne({ email }).exec().then((auth) =>
-      auth
-        ? auth.isCorrectPassword(password)
-          ? res.status(StatusCodes.OK).json({ id: auth._id })
-          : res.status(StatusCodes.BAD_REQUEST).json({ error: 'invalid credentials' })
-        : res.status(StatusCodes.NOT_FOUND).json({ error: 'email not exists' }))
-      .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+      return res.status(StatusCodes.OK).json({ token });
+    })(req, res);
   };
+
+  private readonly register = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    console.log(email, password);
+    if (email && password) {
+      const hashedPassword = await hashPassword(password);
+
+      return await new User({})
+        .save()
+        .then(async (user) => await user.save())
+        .then(async (user) => { console.log(user); return await new Auth({ userId: user._id, email, password: hashedPassword }).save(); })
+        .then((auth) => { console.log(auth); return res.status(StatusCodes.OK).json({ token: generateJwt(auth) }); })
+        .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    } else {
+      return res.status(StatusCodes.BAD_REQUEST).json({});
+    }
+  }
 
   private readonly updatePassword = async (req: Request, res: Response) => {
     const { id, password } = req.body;
