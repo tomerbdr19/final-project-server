@@ -11,6 +11,7 @@ module.exports = {
       rules: {
         semi: [2, 'always'],
         '@typescript-eslint/semi': 'off',
+        '@typescript-eslint/space-before-function-paren': 'off',
         '@typescript-eslint/explicit-function-return-type': 'off',
         '@typescript-eslint/no-misused-promises': 'off',
         '@typescript-eslint/strict-boolean-expressions': 'off',

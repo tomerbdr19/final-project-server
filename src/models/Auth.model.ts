@@ -1,11 +1,9 @@
 import { Schema, model, Document } from 'mongoose';
 
 interface IAuthMethods {
-  isCorrectPassword: (this: IAuth, password: string) => boolean
   setPassword: (this: IAuth, password: string) => Promise<IAuth>
 }
-
-interface IAuth extends IAuthMethods, Document {
+export interface IAuth extends IAuthMethods, Document {
   userId: string
   email: string
   password: string
@@ -18,9 +16,6 @@ const AuthSchema = new Schema<IAuth>({
 });
 
 const methods: IAuthMethods = {
-  isCorrectPassword: function (this: IAuth, password: string) {
-    return this.password === password;
-  },
   setPassword: async function (this: IAuth, password: string) {
     this.password = password;
     return await this.save();
