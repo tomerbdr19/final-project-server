@@ -1,18 +1,18 @@
-import { Schema, Types, model, Document, ObjectId } from 'mongoose';
+import { Schema, model, Document, ObjectId, Types } from 'mongoose';
 
-interface IUser extends Document {
+type UserInfo = {
+    firstName: string;
+    lastName: string;
+    birthDate: Date;
+    region: string;
+    city: string;
+};
+
+interface IUserMethods {}
+export interface IUser extends IUserMethods, Document {
     _id: ObjectId;
-    info: {
-        firstName: string;
-        lastName: string;
-        birthDate: Date;
-        region: string;
-        city: string;
-    };
-    type: UserPermissions;
+    info: UserInfo;
 }
-
-type UserPermissions = 'owner' | 'admin' | 'customer';
 
 const UserSchema = new Schema<IUser>({
     _id: { type: Types.ObjectId, default: new Types.ObjectId() },
@@ -22,8 +22,11 @@ const UserSchema = new Schema<IUser>({
         birthDate: { type: Date, default: undefined },
         region: { type: String, default: '' },
         city: { type: String, default: '' }
-    },
-    type: { type: String, default: 'customer' }
+    }
 });
+
+const methods: IUserMethods = {};
+
+UserSchema.method(methods);
 
 export const User = model<IUser>('User', UserSchema);

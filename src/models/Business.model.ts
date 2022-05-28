@@ -1,6 +1,28 @@
-import { Schema, Types, model } from 'mongoose';
+import { Schema, model, Document, ObjectId, Types } from 'mongoose';
 
-const BusinessSchema = new Schema({
+type BusinessInfo = {
+    info: {
+        name: string;
+        location: {
+            country: string;
+            city: string;
+            street: string;
+        };
+        contact: {
+            phones: string[];
+            email: string[];
+        };
+    };
+};
+
+interface IBusinessMethods {}
+export interface IBusiness extends IBusinessMethods, Document {
+    _id: ObjectId;
+    info: BusinessInfo;
+    ownerId: ObjectId;
+}
+
+const BusinessSchema = new Schema<IBusiness>({
     _id: { type: Types.ObjectId },
     info: {
         name: { type: String },
@@ -14,11 +36,11 @@ const BusinessSchema = new Schema({
             email: [{ type: String }]
         }
     },
-    users: {
-        owners: [{ type: Types.ObjectId, ref: 'Admin' }],
-        admins: [{ type: Types.ObjectId, ref: 'Admin' }],
-        costumers: [{ type: Types.ObjectId, ref: 'Customer' }]
-    }
+    ownerId: { type: Types.ObjectId, ref: 'User' }
 });
 
-export const Business = model('Business', BusinessSchema);
+const methods: IBusinessMethods = {};
+
+BusinessSchema.method(methods);
+
+export const Business = model<IBusiness>('Business', BusinessSchema);
