@@ -6,5 +6,8 @@
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": true
       },
-      "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"]
+      "eslint.validate": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+      "eslint.rules.customizations": [
+        { "rule": "*", "severity": "warn" }
+      ]
 }
