@@ -17,13 +17,15 @@ type BusinessInfo = {
 
 interface IBusinessMethods {}
 export interface IBusiness extends IBusinessMethods, Document {
-    _id: ObjectId;
+    imageUrl: string;
+    name: string;
     info: BusinessInfo;
     ownerId: ObjectId;
 }
 
 const BusinessSchema = new Schema<IBusiness>({
-    _id: { type: Types.ObjectId },
+    imageUrl: { type: String },
+    name: { type: String },
     info: {
         name: { type: String },
         location: {
