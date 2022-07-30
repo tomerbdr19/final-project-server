@@ -29,12 +29,12 @@ export class AuthController implements IController {
     }
 
     private readonly login = async (req: Request, res: Response) => {
-        passport.authenticate('local', function (error, { token, userId }) {
+        passport.authenticate('local', function (error, { token, user }) {
             if (error || !token) {
                 console.log(error);
                 return res.status(error.status).json({ error });
             }
-            return res.status(StatusCodes.OK).json({ token, userId });
+            return res.status(StatusCodes.OK).json({ token, user });
         })(req, res);
     };
 
@@ -50,7 +50,7 @@ export class AuthController implements IController {
                 .then(async (user) => {
                     console.log(user);
                     return await new Auth({
-                        userId: user._id,
+                        user: user._id,
                         email,
                         password: hashedPassword
                     }).save();
@@ -59,7 +59,7 @@ export class AuthController implements IController {
                     console.log(auth);
                     return res
                         .status(StatusCodes.OK)
-                        .json({ token: generateJwt(auth) });
+                        .json({ token: generateJwt(auth.id) });
                 })
                 .catch(() =>
                     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json()

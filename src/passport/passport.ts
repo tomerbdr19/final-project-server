@@ -5,10 +5,13 @@ import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import passport from 'passport';
 import { ServerErrors } from '../types/ServerErrors';
 import { generateJwt } from '../utils/auth';
+import { IUser } from 'models/User.model';
 
 passport.use(
     new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
         Auth.findOne({ email })
+            .populate('user')
+            .exec()
             .then((auth) => {
                 if (!auth) {
                     return done(ServerErrors.INVALID_EMAIL, false);
@@ -16,9 +19,10 @@ passport.use(
                     bcrypt.compare(password, auth.password, (err, isMatch) => {
                         if (err) throw err;
                         if (isMatch) {
-                            const token = `bearer ${generateJwt(auth)}`;
-                            const userId = auth.userId;
-                            return done(null, { token, userId });
+                            const userId = (auth.user as IUser).id;
+                            const token = `bearer ${generateJwt(userId)}`;
+                            const user = auth.user;
+                            return done(null, { token, user });
                         } else {
                             return done(ServerErrors.INVALID_PASSWORD, false);
                         }
@@ -38,7 +42,7 @@ passport.use(
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken()
         },
         (jwtPayload, done) => {
-            Auth.findOne({ userId: jwtPayload.userId })
+            Auth.findOne({ user: jwtPayload.userId })
                 .then((auth) => {
                     if (!auth) {
                         return done(ServerErrors.UNAUTHORIZED, false);

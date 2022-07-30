@@ -2,15 +2,14 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import passport from '../passport/passport';
 import jwt from 'jsonwebtoken';
-import { IAuth } from '../models';
 import { StatusCodes } from 'http-status-codes';
 
 export const hashPassword = async (password: string): Promise<string> =>
     await bcrypt.hash(password, 10);
 
-export const generateJwt = (auth: IAuth) => {
+export const generateJwt = (userId: string) => {
     const payload = {
-        userId: auth.userId
+        userId
     };
     const expiresIn = '90d';
 

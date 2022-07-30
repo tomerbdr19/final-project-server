@@ -1,16 +1,17 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model, Document, Types, ObjectId } from 'mongoose';
+import { IUser } from './User.model';
 
 interface IAuthMethods {
     setPassword: (this: IAuth, password: string) => Promise<IAuth>;
 }
 export interface IAuth extends IAuthMethods, Document {
-    userId: string;
+    user: ObjectId | IUser;
     email: string;
     password: string;
 }
 
 const AuthSchema = new Schema<IAuth>({
-    userId: { type: String, ref: 'User' },
+    user: { type: Types.ObjectId, ref: 'User' },
     email: { type: String },
     password: { type: String }
 });
