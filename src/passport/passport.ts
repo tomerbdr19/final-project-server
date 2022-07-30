@@ -17,8 +17,8 @@ passport.use(
                         if (err) throw err;
                         if (isMatch) {
                             const token = `bearer ${generateJwt(auth)}`;
-                            const id = auth.userId;
-                            return done(null, { token, id });
+                            const userId = auth.userId;
+                            return done(null, { token, userId });
                         } else {
                             return done(ServerErrors.INVALID_PASSWORD, false);
                         }
