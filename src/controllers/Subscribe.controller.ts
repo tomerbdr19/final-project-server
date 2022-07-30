@@ -23,19 +23,22 @@ export class SubscribeController implements IController {
             {},
             {},
             {},
-            { userId: string; businessId: string; id: string }
+            { user: string; business: string; id: string }
         >,
         res: Response
     ) => {
         const filters = getTruthyFilters(req.query);
 
         return Subscription.find(filters)
+            .populate('business', ['imageUrl', 'name'])
+            .populate('user', ['imageUrl', 'name'])
+            .exec()
             .then((subscriptions) => {
                 if (!subscriptions) {
                     return res.status(StatusCodes.INTERNAL_SERVER_ERROR);
                 }
 
-                return res.status(StatusCodes.OK).json({ subscriptions });
+                return res.status(StatusCodes.OK).json(subscriptions);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
