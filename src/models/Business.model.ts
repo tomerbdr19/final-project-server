@@ -1,8 +1,8 @@
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { applyDefaultVirtuals } from '../utils/schema';
 
 type BusinessInfo = {
     info: {
-        name: string;
         location: {
             country: string;
             city: string;
@@ -44,5 +44,6 @@ const BusinessSchema = new Schema<IBusiness>({
 const methods: IBusinessMethods = {};
 
 BusinessSchema.method(methods);
+applyDefaultVirtuals(BusinessSchema);
 
 export const Business = model<IBusiness>('Business', BusinessSchema);
