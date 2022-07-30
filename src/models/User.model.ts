@@ -1,3 +1,4 @@
+import { applyDefaultVirtuals } from '../utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
 
 type UserInfo = {
@@ -28,5 +29,6 @@ const UserSchema = new Schema<IUser>({
 const methods: IUserMethods = {};
 
 UserSchema.method(methods);
+applyDefaultVirtuals(UserSchema);
 
 export const User = model<IUser>('User', UserSchema);
