@@ -5,7 +5,8 @@ import {
     AuthController,
     PostController,
     SubscribeController,
-    BusinessController
+    BusinessController,
+    FileController
 } from './controllers';
 
 const IS_DEV_MODE = true;
@@ -17,7 +18,8 @@ const app = new App(
         new AuthController(),
         new PostController(),
         new SubscribeController(),
-        new BusinessController()
+        new BusinessController(),
+        new FileController()
     ],
     (IS_DEV_MODE
         ? process.env.DB_CONN_STRING_DEV

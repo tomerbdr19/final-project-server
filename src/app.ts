@@ -3,6 +3,7 @@ import cors from 'cors';
 import { IController } from './types/Controller';
 import { connect } from 'mongoose';
 import passport from './passport/passport';
+import { UPLOAD_DIRECTORY_PATH } from './constants';
 export class App {
     public express: Application;
     public port: number;
@@ -15,6 +16,7 @@ export class App {
         this.express.use(express.json());
         this.express.use(cors());
         this.express.use(passport.initialize());
+        this.express.use(express.static(UPLOAD_DIRECTORY_PATH));
         this.initDB(mongoUrl);
         this.initControllers(controllers);
     }
