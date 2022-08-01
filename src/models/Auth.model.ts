@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types, ObjectId } from 'mongoose';
+import { IBusiness } from './Business.model';
 import { IUser } from './User.model';
 
 interface IAuthMethods {
@@ -6,14 +7,16 @@ interface IAuthMethods {
 }
 export interface IAuth extends IAuthMethods, Document {
     user: ObjectId | IUser;
+    business: ObjectId | IBusiness;
     email: string;
     password: string;
 }
 
 const AuthSchema = new Schema<IAuth>({
     user: { type: Types.ObjectId, ref: 'User' },
-    email: { type: String },
-    password: { type: String }
+    business: { type: Types.ObjectId, ref: 'Business' },
+    email: { type: String, unique: true, required: true },
+    password: { type: String, unique: true, required: true }
 });
 
 const methods: IAuthMethods = {

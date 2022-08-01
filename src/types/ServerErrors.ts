@@ -5,30 +5,35 @@ type Errors =
     | 'INVALID_EMAIL'
     | 'UNAUTHORIZED'
     | 'INTERNAL_ERROR'
-    | 'UNSUPPORTED_FILE';
+    | 'UNSUPPORTED_FILE'
+    | 'NOT_FOUND';
 
 export const ServerErrors: Record<
     Errors,
-    { status: StatusCodes; message: string }
+    { status: StatusCodes; error: string }
 > = {
     INVALID_PASSWORD: {
         status: StatusCodes.BAD_REQUEST,
-        message: 'Invalid password'
+        error: 'Invalid password'
     },
     INVALID_EMAIL: {
         status: StatusCodes.BAD_REQUEST,
-        message: 'Invalid email'
+        error: 'Invalid email'
     },
     UNAUTHORIZED: {
         status: StatusCodes.UNAUTHORIZED,
-        message: 'Unauthorized'
+        error: 'Unauthorized'
     },
     INTERNAL_ERROR: {
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        message: 'Internal error'
+        error: 'Internal error'
     },
     UNSUPPORTED_FILE: {
         status: StatusCodes.UNSUPPORTED_MEDIA_TYPE,
-        message: 'unsupported file'
+        error: 'unsupported file'
+    },
+    NOT_FOUND: {
+        status: StatusCodes.NOT_FOUND,
+        error: 'not found'
     }
 };
