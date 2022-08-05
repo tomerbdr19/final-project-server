@@ -49,7 +49,11 @@ export class SubscribeController implements IController {
     ) => {
         const { userId, businessId } = req.body;
 
-        return new Subscription({ userId, businessId, createdAt: new Date() })
+        return new Subscription({
+            user: userId,
+            business: businessId,
+            createdAt: new Date()
+        })
             .save()
             .then((subscription) =>
                 res.status(StatusCodes.OK).json(subscription)
