@@ -1,8 +1,9 @@
 import { IController } from '@/types/Controller';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Post } from '../models';
+import { Post, Subscription } from '../models';
 import { IPost } from 'models/Post.model';
+import { ISubscription } from 'models/Subscription.model';
 
 export class PostController implements IController {
     path: string = '/post';
@@ -14,23 +15,22 @@ export class PostController implements IController {
 
     private initRoutes() {
         this.router.get(`${this.path}`, this.getPosts);
+        this.router.get(`${this.path}/recent`, this.getUserRecentPost);
         this.router.post(`${this.path}`, this.createPost);
         this.router.delete(`${this.path}`, this.deletePost);
     }
 
     private readonly getPosts = async (
-        req: Request<{}, {}, {}, { businessId: string }>,
+        req: Request<{}, {}, {}, { business: string }>,
         res: Response
     ) => {
-        const { businessId } = req.query;
+        const { business } = req.query;
 
-        return Post.find({ businessId })
+        return Post.find({ business })
+            .populate('business', ['imageUrl', 'name'])
+            .exec()
             .then((posts) => {
-                if (!posts) {
-                    return res.status(StatusCodes.INTERNAL_SERVER_ERROR);
-                }
-
-                return res.status(StatusCodes.OK).json({ posts });
+                return res.status(StatusCodes.OK).json(posts);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
@@ -39,10 +39,10 @@ export class PostController implements IController {
         req: Request<{}, {}, IPost>,
         res: Response
     ) => {
-        const { businessId, content, imageUrl } = req.body;
+        const { business, content, imageUrl } = req.body;
 
         return new Post({
-            businessId,
+            business,
             content,
             imageUrl,
             createdAt: new Date()
@@ -66,5 +66,30 @@ export class PostController implements IController {
                 return res.status(StatusCodes.OK);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+    };
+
+    private readonly getUserRecentPost = async (
+        req: Request<{}, {}, {}, { userId: string; page: number }>,
+        res: Response
+    ) => {
+        const { userId, page = 0 } = req.query;
+
+        try {
+            const userSubscriptions = await Subscription.find({
+                user: userId
+            }).then((_) => _);
+
+            const subscribedBusinesses = (
+                userSubscriptions as ISubscription[]
+            ).map((_) => _.business);
+
+            return Post.find({ business: { $in: subscribedBusinesses } })
+                .populate('business', ['imageUrl, name'])
+                .sort({ createdAt: -1 })
+                .exec()
+                .then((posts) => res.status(StatusCodes.OK).json(posts));
+        } catch {
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json();
+        }
     };
 }

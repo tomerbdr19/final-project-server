@@ -1,15 +1,17 @@
+import { applyDefaultVirtuals } from '../utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { IBusiness } from './Business.model';
 
 interface IPostMethods {}
 export interface IPost extends IPostMethods, Document {
-    businessId: ObjectId;
+    business: ObjectId | IBusiness;
     content: string;
     imageUrl: string;
     createdAt: Date;
 }
 
 const PostSchema = new Schema<IPost>({
-    businessId: { type: Types.ObjectId, ref: 'Business' },
+    business: { type: Types.ObjectId, ref: 'Business' },
     content: { type: String },
     imageUrl: { type: String },
     createdAt: { type: Date }
@@ -17,6 +19,7 @@ const PostSchema = new Schema<IPost>({
 
 const methods: IPostMethods = {};
 
+applyDefaultVirtuals(PostSchema);
 PostSchema.method(methods);
 
 export const Post = model<IPost>('Post', PostSchema);
