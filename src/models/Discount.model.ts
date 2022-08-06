@@ -1,24 +1,27 @@
+import { applyDefaultVirtuals } from '../utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { IBusiness } from './Business.model';
 
 interface IDiscountMethods {}
-
-type DiscountType = 'percentage' | 'new price' | 'amount' | 'free item';
-
 export interface IDiscount extends IDiscountMethods, Document {
-    businessId: ObjectId;
+    business: ObjectId | IBusiness;
+    description: string;
+    imageUrl: string;
     createdAt: Date;
-    type: DiscountType;
+    expiredAt: Date;
 }
 
 const DiscountSchema = new Schema<IDiscount>({
-    _id: { type: Types.ObjectId },
-    businessId: { type: Types.ObjectId, ref: 'Business' },
+    business: { type: Types.ObjectId, ref: 'Business' },
+    description: { type: String },
+    imageUrl: { type: String },
     createdAt: { type: Date },
-    type: { type: String }
+    expiredAt: { type: Date }
 });
 
 const methods: IDiscountMethods = {};
 
 DiscountSchema.method(methods);
+applyDefaultVirtuals(DiscountSchema);
 
 export const Discount = model<IDiscount>('Discount', DiscountSchema);
