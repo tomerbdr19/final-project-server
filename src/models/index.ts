@@ -1,4 +1,3 @@
-export { Admin } from './Admin.model';
 export { User } from './User.model';
 export { Auth, IAuth } from './Auth.model';
 export { Coupon } from './Coupon.model';
@@ -6,7 +5,6 @@ export { Business } from './Business.model';
 export { Subscription } from './Subscription.model';
 export { BusinessTheme } from './BusinessTheme.model';
 export { Post } from './Post.model';
-export { PublishedPost } from './PublishedPost.model';
 export { FBToken } from './FBToken.model';
 export { Message } from './Message.model';
 export { Chat } from './Chat.model';
