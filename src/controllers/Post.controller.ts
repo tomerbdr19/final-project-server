@@ -39,11 +39,11 @@ export class PostController implements IController {
         req: Request<{}, {}, IPost>,
         res: Response
     ) => {
-        const { business, content, imageUrl } = req.body;
+        const { business, caption, imageUrl } = req.body;
 
         return new Post({
             business,
-            content,
+            caption,
             imageUrl,
             createdAt: new Date()
         })
@@ -69,14 +69,14 @@ export class PostController implements IController {
     };
 
     private readonly getUserRecentPost = async (
-        req: Request<{}, {}, {}, { userId: string; page: number }>,
+        req: Request<{}, {}, {}, { user: string; page: number }>,
         res: Response
     ) => {
-        const { userId, page = 0 } = req.query;
+        const { user, page = 0 } = req.query;
 
         try {
             const userSubscriptions = await Subscription.find({
-                user: userId
+                user
             }).then((_) => _);
 
             const subscribedBusinesses = (
@@ -84,7 +84,7 @@ export class PostController implements IController {
             ).map((_) => _.business);
 
             return Post.find({ business: { $in: subscribedBusinesses } })
-                .populate('business', ['imageUrl, name'])
+                .populate('business', ['imageUrl', 'name'])
                 .sort({ createdAt: -1 })
                 .exec()
                 .then((posts) => res.status(StatusCodes.OK).json(posts));
