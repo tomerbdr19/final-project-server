@@ -1,9 +1,9 @@
-import { IController } from '@/types/Controller';
+import { IController } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
-import { generateJwt, hashPassword, jwtAuth } from '../utils/auth';
-import { Auth, Business, User } from '../models';
+import { generateJwt, hashPassword, jwtAuth } from '@utils/auth';
+import { Auth, Business, User } from '@models';
 
 export class AuthController implements IController {
     path: string = '/auth';

@@ -1,8 +1,7 @@
-import { IController } from '@/types/Controller';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { IBusiness } from 'models/Business.model';
-import { Business } from '../models';
+import { Business, IBusiness } from '@models';
+import { IController } from '@types';
 
 export class BusinessController implements IController {
     path: string = '/business';

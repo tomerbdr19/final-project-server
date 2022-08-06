@@ -1,4 +1,4 @@
-import { applyDefaultVirtuals } from '../utils/schema';
+import { applyDefaultVirtuals } from '@utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
 import { IDiscount } from './Discount.model';
 import { IUser } from './User.model';

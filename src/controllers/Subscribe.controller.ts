@@ -1,8 +1,8 @@
-import { IController } from '@/types/Controller';
-import { getTruthyFilters } from '../utils/filter';
+import { IController } from '@types';
+import { getTruthyFilters } from '@utils/filter';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Subscription } from '../models';
+import { Subscription } from '@models';
 
 export class SubscribeController implements IController {
     path: string = '/subscribe';

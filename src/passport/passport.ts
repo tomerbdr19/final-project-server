@@ -1,11 +1,10 @@
 import bcrypt from 'bcrypt';
-import { Auth } from '../models';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import passport from 'passport';
-import { ServerErrors } from '../types/ServerErrors';
-import { generateJwt } from '../utils/auth';
-import { IUser } from 'models/User.model';
+import { ServerErrors } from '@types';
+import { generateJwt } from '@utils/auth';
+import { Auth, IUser } from '@models';
 
 passport.use(
     new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {

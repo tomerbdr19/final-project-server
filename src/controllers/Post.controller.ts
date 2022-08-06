@@ -1,10 +1,7 @@
-import { IController } from '@/types/Controller';
+import { IController } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Post, Subscription } from '../models';
-import { IPost } from 'models/Post.model';
-import { ISubscription } from 'models/Subscription.model';
-
+import { Post, IPost, Subscription, ISubscription } from '@models';
 export class PostController implements IController {
     path: string = '/post';
     router: Router = Router();

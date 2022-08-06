@@ -1,5 +1,5 @@
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
-import { applyDefaultVirtuals } from '../utils/schema';
+import { applyDefaultVirtuals } from '@utils/schema';
 
 type BusinessInfo = {
     info: {

@@ -1,9 +1,7 @@
-import { IController } from '@/types/Controller';
+import { IController, ServerErrors } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { IUser } from 'models/User.model';
-import { User } from '../models';
-import { ServerErrors } from '../types/ServerErrors';
+import { User, IUser } from '@models';
 
 export class UserController implements IController {
     path: string = '/user';

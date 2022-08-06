@@ -1,9 +1,8 @@
-import { IController } from '@/types/Controller';
-import { ServerErrors } from '../types/ServerErrors';
-import { SERVER_URL_BASE } from '../constants';
+import { IController, ServerErrors } from '@types';
+import { SERVER_URL_BASE } from '@constants';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { multerUpload } from '../utils/multer';
+import { multerUpload } from '@utils/multer';
 
 export class FileController implements IController {
     path: string = '/file';

@@ -1,9 +1,8 @@
-import { IController } from '../types/Controller';
+import { IController, ServerErrors } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Coupon } from '../models';
-import { generateAndGetCouponQRCodeUrl } from '../utils/qrcode';
-import { ServerErrors } from '../types/ServerErrors';
+import { Coupon } from '@models';
+import { generateAndGetCouponQRCodeUrl } from '@utils/qrcode';
 
 export class CouponController implements IController {
     path: string = '/coupon';
