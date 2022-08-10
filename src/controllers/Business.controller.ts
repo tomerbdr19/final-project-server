@@ -15,6 +15,7 @@ export class BusinessController implements IController {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
         this.router.post(`${this.path}`, this.createBusiness);
         this.router.get(`${this.path}`, this.getBusiness);
+        this.router.get(`${this.path}/search`, this.searchBusinessesByName);
     }
 
     private readonly getBusinesses = async (
@@ -28,6 +29,19 @@ export class BusinessController implements IController {
                 Business.findById(id).catch(() => undefined)
             )
         ).then((businesses) => res.status(StatusCodes.OK).json(businesses));
+    };
+
+    private readonly searchBusinessesByName = async (
+        req: Request<{}, {}, {}, { name: string }>,
+        res: Response
+    ) => {
+        const { name } = req.query;
+
+        return Business.find({ name: { $regex: name, $options: 'i' } })
+            .select(['name', 'id', 'imageUrl'])
+            .limit(6)
+            .exec()
+            .then((businesses) => res.status(StatusCodes.OK).json(businesses));
     };
 
     private readonly getBusiness = async (
