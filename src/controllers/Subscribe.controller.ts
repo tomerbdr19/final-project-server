@@ -2,7 +2,7 @@ import { IController } from '@types';
 import { getTruthyFilters } from '@utils/filter';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Subscription } from '@models';
+import { IBusiness, IUser, Subscription } from '@models';
 
 export class SubscribeController implements IController {
     path: string = '/subscribe';
@@ -15,7 +15,7 @@ export class SubscribeController implements IController {
     private initRoutes() {
         this.router.get(`${this.path}`, this.getSubscriptions);
         this.router.post(`${this.path}`, this.createSubscription);
-        this.router.delete(`${this.path}`, this.deleteSubscription);
+        this.router.post(`${this.path}/delete`, this.deleteSubscription);
     }
 
     private readonly getSubscriptions = async (
@@ -40,40 +40,41 @@ export class SubscribeController implements IController {
 
                 return res.status(StatusCodes.OK).json(subscriptions);
             })
-            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
 
     private readonly createSubscription = async (
-        req: Request<{}, {}, { userId: string; businessId: string }>,
+        req: Request<{}, {}, { user: IUser; business: IBusiness }>,
         res: Response
     ) => {
-        const { userId, businessId } = req.body;
+        const { user, business } = req.body;
 
         return new Subscription({
-            user: userId,
-            business: businessId,
+            user: user.id,
+            business: business.id,
             createdAt: new Date()
         })
             .save()
-            .then((subscription) =>
-                res.status(StatusCodes.OK).json(subscription)
-            )
-            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+            .then(({ id }) => res.status(StatusCodes.OK).json({ id }))
+            .catch((err) => {
+                console.log(err);
+                return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json();
+            });
     };
 
     private readonly deleteSubscription = async (
-        req: Request<{}, {}, {}, { subscriptionId: string }>,
+        req: Request<{}, {}, { id: string }>,
         res: Response
     ) => {
-        const { subscriptionId } = req.query;
+        const { id } = req.body;
 
-        return Subscription.findByIdAndDelete(subscriptionId)
+        return Subscription.findByIdAndDelete(id)
             .then((doc) => {
                 if (!doc) {
                     return res.status(StatusCodes.NOT_FOUND);
                 }
-                return res.status(StatusCodes.OK);
+                return res.status(StatusCodes.OK).json({ id });
             })
-            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
 }

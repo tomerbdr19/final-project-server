@@ -1,10 +1,12 @@
 import { applyDefaultVirtuals } from '@utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { IBusiness } from './Business.model';
+import { IUser } from './User.model';
 
 interface ISubscriptionMethods {}
 export interface ISubscription extends ISubscriptionMethods, Document {
-    user: ObjectId;
-    business: ObjectId;
+    user: ObjectId | IUser;
+    business: ObjectId | IBusiness;
     createdAt: Date;
 }
 
