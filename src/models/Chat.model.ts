@@ -1,22 +1,47 @@
+import { IMessage, Message } from '@models';
+import { applyDefaultVirtuals } from '@utils/schema';
 import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { IBusiness } from './Business.model';
+import { IUser } from './User.model';
 
-interface IChatMethods {}
+interface IChatMethods {
+    getChatMessages: () => Promise<IMessage[]>;
+}
 export interface IChat extends IChatMethods, Document {
-    _id: ObjectId;
-    userId: ObjectId;
-    businessId: ObjectId;
+    user: ObjectId | IUser;
+    business: ObjectId | IBusiness;
+    updatedAt: Date;
     createdAt: Date;
 }
 
 const ChatSchema = new Schema<IChat>({
-    _id: { type: Types.ObjectId },
-    userId: { type: Types.ObjectId, ref: 'User' },
-    businessId: { type: Types.ObjectId, ref: 'Business' },
-    createdAt: { type: Date }
+    user: { type: Types.ObjectId, ref: 'User', isRequired: true },
+    business: { type: Types.ObjectId, ref: 'Business', isRequired: true },
+    createdAt: { type: Date, default: new Date() },
+    updatedAt: { type: Date, default: new Date() }
+});
+ChatSchema.index({ user: 1, business: 1 }, { unique: true });
+
+ChatSchema.method('getChatMessages', function (): Promise<IMessage[]> {
+    const { user, business } = this;
+
+    return Message.find({ chat: this.id })
+        .sort({ createdAt: -1 })
+        .then((messages) =>
+            messages.map(
+                ({ id, content, senderType, createdAt, chat }) =>
+                    ({
+                        id,
+                        chat,
+                        createdAt,
+                        content,
+                        senderType,
+                        sender: senderType === 'user' ? user : business
+                    } as IMessage)
+            )
+        );
 });
 
-const methods: IChatMethods = {};
-
-ChatSchema.method(methods);
+applyDefaultVirtuals(ChatSchema);
 
 export const Chat = model<IChat>('Chat', ChatSchema);

@@ -11,12 +11,13 @@ type UserInfo = {
 
 interface IUserMethods {}
 export interface IUser extends IUserMethods, Document {
-    _id: ObjectId;
     info: UserInfo;
+    imageUrl: string;
+    name: string;
 }
 
 const UserSchema = new Schema<IUser>({
-    _id: { type: Types.ObjectId, default: new Types.ObjectId() },
+    imageUrl: { type: String },
     info: {
         firstName: { type: String, default: '' },
         lastName: { type: String, default: '' },
@@ -29,6 +30,9 @@ const UserSchema = new Schema<IUser>({
 const methods: IUserMethods = {};
 
 UserSchema.method(methods);
+UserSchema.virtual('name').get(function (this) {
+    return `${this.info.firstName} ${this.info.lastName}`;
+});
 applyDefaultVirtuals(UserSchema);
 
 export const User = model<IUser>('User', UserSchema);
