@@ -29,13 +29,18 @@ export class AuthController implements IController {
     }
 
     private readonly login = async (req: Request, res: Response) => {
-        passport.authenticate('local', function (error, { token, user }) {
-            if (error || !token) {
-                console.log(error);
-                return res.status(error.status).json({ error });
+        passport.authenticate(
+            'local',
+            function (error, { token, user, business }) {
+                if (error || !token) {
+                    console.log(error);
+                    return res.status(error.status).json({ error });
+                }
+                return res
+                    .status(StatusCodes.OK)
+                    .json({ token, user, business });
             }
-            return res.status(StatusCodes.OK).json({ token, user });
-        })(req, res);
+        )(req, res);
     };
 
     private readonly register = async (req: Request, res: Response) => {

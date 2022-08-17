@@ -4,12 +4,13 @@ import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
 import passport from 'passport';
 import { ServerErrors } from '@types';
 import { generateJwt } from '@utils/auth';
-import { Auth, IUser } from '@models';
+import { Auth, IBusiness, IUser } from '@models';
 
 passport.use(
     new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
         Auth.findOne({ email })
             .populate('user')
+            .populate('business')
             .exec()
             .then((auth) => {
                 if (!auth) {
@@ -18,10 +19,14 @@ passport.use(
                     bcrypt.compare(password, auth.password, (err, isMatch) => {
                         if (err) throw err;
                         if (isMatch) {
-                            const userId = (auth.user as IUser).id;
-                            const token = `bearer ${generateJwt(userId)}`;
+                            const userId = (auth.user as IUser)?.id;
+                            const businessId = (auth.business as IBusiness)?.id;
+                            const token = `bearer ${generateJwt(
+                                userId || businessId
+                            )}`;
                             const user = auth.user;
-                            return done(null, { token, user });
+                            const business = auth.business;
+                            return done(null, { token, user, business });
                         } else {
                             return done(ServerErrors.INVALID_PASSWORD, false);
                         }
