@@ -91,10 +91,9 @@ export class ChatController implements IController {
         return new Message({ sender, senderType, chat, content })
             .save()
             .then(async (message) => {
-                await Chat.findOneAndUpdate(
-                    { chat },
-                    { updateAt: message.createdAt }
-                );
+                await Chat.findByIdAndUpdate(chat, {
+                    updatedAt: message.createdAt
+                });
                 return res.status(StatusCodes.OK).json(message);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
