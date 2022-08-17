@@ -25,6 +25,7 @@ export class PostController implements IController {
 
         return Post.find({ business })
             .populate('business', ['imageUrl', 'name'])
+            .sort({ createdAt: -1 })
             .exec()
             .then((posts) => {
                 return res.status(StatusCodes.OK).json(posts);
@@ -45,6 +46,7 @@ export class PostController implements IController {
             createdAt: new Date()
         })
             .save()
+            .then((post) => post.populate('business'))
             .then((post) => res.status(StatusCodes.OK).json(post))
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
