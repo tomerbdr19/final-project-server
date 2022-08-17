@@ -1,7 +1,7 @@
 import { IController } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Post, IPost, Subscription, ISubscription } from '@models';
+import { Post, IPost, Subscription, ISubscription, IBusiness } from '@models';
 export class PostController implements IController {
     path: string = '/post';
     router: Router = Router();
@@ -39,7 +39,7 @@ export class PostController implements IController {
         const { business, caption, imageUrl } = req.body;
 
         return new Post({
-            business,
+            business: (business as IBusiness).id,
             caption,
             imageUrl,
             createdAt: new Date()
