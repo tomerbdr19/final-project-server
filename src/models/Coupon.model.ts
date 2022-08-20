@@ -8,6 +8,7 @@ export interface ICoupon extends ICouponMethods, Document {
     user: ObjectId | IUser;
     discount: ObjectId | IDiscount;
     isRedeemed: boolean;
+    redeemedAt: Date;
     redeemCode: string;
 }
 
@@ -15,6 +16,7 @@ const CouponSchema = new Schema<ICoupon>({
     user: { type: Types.ObjectId, ref: 'User' },
     discount: { type: Types.ObjectId, ref: 'Discount' },
     isRedeemed: { type: Boolean, default: false },
+    redeemedAt: { type: Date, default: null },
     redeemCode: { type: String }
 });
 

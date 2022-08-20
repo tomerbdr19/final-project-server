@@ -33,7 +33,7 @@ export class App {
     }
 
     private async initDB(mongoUrl: string) {
-        await connect(mongoUrl);
+        await connect(mongoUrl, { ignoreUndefined: true });
     }
 
     public listen() {
