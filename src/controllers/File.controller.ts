@@ -31,6 +31,6 @@ export class FileController implements IController {
 
         return res
             .status(StatusCodes.OK)
-            .json({ url: `${SERVER_URL_BASE}${file.filename}` });
+            .json(`${SERVER_URL_BASE}${file.filename}`);
     };
 }
