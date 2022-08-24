@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Business, IBusiness } from '@models';
-import { IController } from '@types';
+import { IController, ServerErrors } from '@types';
 
 export class BusinessController implements IController {
     path: string = '/business';
@@ -13,7 +13,7 @@ export class BusinessController implements IController {
 
     private initRoutes() {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
-        this.router.post(`${this.path}`, this.createBusiness);
+        this.router.post(`${this.path}`, this.updateBusiness);
         this.router.get(`${this.path}`, this.getBusiness);
         this.router.get(`${this.path}/search`, this.searchBusinessesByName);
     }
@@ -55,15 +55,22 @@ export class BusinessController implements IController {
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
 
-    private readonly createBusiness = async (
-        req: Request<{}, {}, IBusiness, {}>,
+    private readonly updateBusiness = async (
+        req: Request<{}, {}, { business: IBusiness }, {}>,
         res: Response
     ) => {
-        const { imageUrl, name } = req.body;
+        const { business } = req.body;
 
-        return new Business({ imageUrl, name })
-            .save()
-            .then((business) => res.status(StatusCodes.OK).json(business))
+        return Business.findOneAndUpdate(business.id, business, { new: true })
+            .then((updatedBusiness) => {
+                if (!updatedBusiness) {
+                    return res
+                        .status(StatusCodes.NOT_FOUND)
+                        .json(ServerErrors.NOT_FOUND);
+                }
+
+                return res.status(StatusCodes.OK).json(updatedBusiness);
+            })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
 }
