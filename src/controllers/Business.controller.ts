@@ -13,6 +13,8 @@ export class BusinessController implements IController {
 
     private initRoutes() {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
+        this.router.post(`${this.path}/add-image`, this.addBusinessImage);
+        this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
         this.router.post(`${this.path}/theme`, this.updateBusinessTheme);
         this.router.get(`${this.path}`, this.getBusiness);
@@ -84,6 +86,51 @@ export class BusinessController implements IController {
         return Business.findByIdAndUpdate(
             business,
             { theme: { key } },
+            { new: true }
+        )
+            .then((updatedBusiness) => {
+                if (!updatedBusiness) {
+                    return res
+                        .status(StatusCodes.NOT_FOUND)
+                        .json(ServerErrors.NOT_FOUND);
+                }
+
+                return res.status(StatusCodes.OK).json(updatedBusiness);
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+    };
+
+    private readonly addBusinessImage = async (
+        req: Request<{}, {}, { business: string; imageUrl: string }, {}>,
+        res: Response
+    ) => {
+        const { business, imageUrl } = req.body;
+
+        return Business.findByIdAndUpdate(
+            business,
+            { $push: { images: imageUrl } },
+            { new: true }
+        )
+            .then((updatedBusiness) => {
+                if (!updatedBusiness) {
+                    return res
+                        .status(StatusCodes.NOT_FOUND)
+                        .json(ServerErrors.NOT_FOUND);
+                }
+
+                return res.status(StatusCodes.OK).json(updatedBusiness);
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+    };
+
+    private readonly deleteBusinessImage = async (
+        req: Request<{}, {}, { business: string; imageUrl: string }, {}>,
+        res: Response
+    ) => {
+        const { business, imageUrl } = req.body;
+        return Business.findByIdAndUpdate(
+            business,
+            { $pull: { images: imageUrl } },
             { new: true }
         )
             .then((updatedBusiness) => {
