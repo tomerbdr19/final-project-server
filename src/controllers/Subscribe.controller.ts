@@ -84,7 +84,7 @@ export class SubscribeController implements IController {
         const filters = getTruthyFilters(req.query);
 
         return Subscription.find(filters)
-            .populate('business', ['imageUrl', 'name'])
+            .populate('business')
             .populate('user', ['imageUrl', 'name'])
             .exec()
             .then((subscriptions) => {

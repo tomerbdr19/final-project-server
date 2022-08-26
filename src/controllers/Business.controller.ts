@@ -14,6 +14,7 @@ export class BusinessController implements IController {
     private initRoutes() {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
         this.router.post(`${this.path}`, this.updateBusiness);
+        this.router.post(`${this.path}/theme`, this.updateBusinessTheme);
         this.router.get(`${this.path}`, this.getBusiness);
         this.router.get(`${this.path}/search`, this.searchBusinessesByName);
     }
@@ -62,6 +63,29 @@ export class BusinessController implements IController {
         const { business } = req.body;
 
         return Business.findOneAndUpdate(business.id, business, { new: true })
+            .then((updatedBusiness) => {
+                if (!updatedBusiness) {
+                    return res
+                        .status(StatusCodes.NOT_FOUND)
+                        .json(ServerErrors.NOT_FOUND);
+                }
+
+                return res.status(StatusCodes.OK).json(updatedBusiness);
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+    };
+
+    private readonly updateBusinessTheme = async (
+        req: Request<{}, {}, { business: string; key: string }, {}>,
+        res: Response
+    ) => {
+        const { business, key } = req.body;
+
+        return Business.findByIdAndUpdate(
+            business,
+            { theme: { key } },
+            { new: true }
+        )
             .then((updatedBusiness) => {
                 if (!updatedBusiness) {
                     return res

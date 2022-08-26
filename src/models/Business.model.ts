@@ -1,44 +1,53 @@
-import { Schema, model, Document, ObjectId, Types } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import { applyDefaultVirtuals } from '@utils/schema';
 
 type BusinessInfo = {
     info: {
+        description: string;
         location: {
             country: string;
             city: string;
             street: string;
         };
         contact: {
-            phones: string[];
-            email: string[];
+            phone: string;
+            email: string;
         };
     };
+};
+
+type BusinessTheme = {
+    key: string;
 };
 
 interface IBusinessMethods {}
 export interface IBusiness extends IBusinessMethods, Document {
     imageUrl: string;
     name: string;
+    images: string[];
     info: BusinessInfo;
-    ownerId: ObjectId;
+    theme: BusinessTheme;
 }
 
 const BusinessSchema = new Schema<IBusiness>({
     imageUrl: { type: String },
     name: { type: String },
+    images: [{ type: String }],
     info: {
-        name: { type: String },
+        description: { type: String },
         location: {
             country: { type: String },
             city: { type: String },
             street: { type: String }
         },
         contact: {
-            phones: [{ type: String }],
-            email: [{ type: String }]
+            phone: { type: String },
+            email: { type: String }
         }
     },
-    ownerId: { type: Types.ObjectId, ref: 'User' }
+    theme: {
+        key: { type: String }
+    }
 });
 
 const methods: IBusinessMethods = {};
