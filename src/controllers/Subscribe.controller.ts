@@ -10,6 +10,7 @@ import {
     IUser,
     Subscription
 } from '@models';
+import { getActivityList } from '@utils/activity';
 
 export class SubscribeController implements IController {
     path: string = '/subscribe';
@@ -22,6 +23,7 @@ export class SubscribeController implements IController {
     private initRoutes() {
         this.router.get(`${this.path}`, this.getSubscriptions);
         this.router.get(`${this.path}`, this.createSubscription);
+        this.router.get(`${this.path}/activity`, this.subscribersActivity);
         this.router.post(`${this.path}/filter`, this.getFilteredSubscriptions);
         this.router.post(`${this.path}/delete`, this.deleteSubscription);
     }
@@ -174,5 +176,37 @@ export class SubscribeController implements IController {
                 };
             })
         );
+    };
+
+    private readonly subscribersActivity = async (
+        req: Request<
+            {},
+            {},
+            {},
+            { business: string; period: 'day' | 'week' | 'month' }
+        >,
+        res: Response
+    ) => {
+        const { business, period } = req.query;
+
+        const activities = getActivityList(period);
+
+        return Promise.all(
+            activities.map((activity) => {
+                const { from, to, label } = activity;
+
+                return Subscription.find({
+                    business,
+                    createdAt: { $gte: from, $lte: to }
+                })
+                    .countDocuments()
+                    .then((value) => ({ label, value }));
+            })
+        )
+            .then((_) => {
+                console.log(_);
+                return res.status(StatusCodes.OK).json(_);
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
 }

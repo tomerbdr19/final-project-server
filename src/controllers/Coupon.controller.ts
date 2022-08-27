@@ -1,8 +1,9 @@
 import { IController, ServerErrors } from '@types';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Coupon } from '@models';
+import { Coupon, Discount } from '@models';
 import { generateAndGetCouponQRCodeUrl } from '@utils/qrcode';
+import { getActivityList } from '@utils/activity';
 
 export class CouponController implements IController {
     path: string = '/coupon';
@@ -16,6 +17,7 @@ export class CouponController implements IController {
         this.router.get(`${this.path}`, this.getCoupons);
         this.router.post(`${this.path}`, this.createCoupon);
         this.router.get(`${this.path}/redeem-qr-code`, this.getRedeemQRCode);
+        this.router.get(`${this.path}/activity`, this.couponsActivity);
     }
 
     private readonly getCoupons = async (
@@ -78,6 +80,35 @@ export class CouponController implements IController {
                 { path: 'user', select: 'id' }
             ])
             .then((coupon) => res.status(StatusCodes.OK).json(coupon))
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly couponsActivity = async (
+        req: Request<
+            {},
+            {},
+            {},
+            { business: string; period: 'day' | 'week' | 'month' }
+        >,
+        res: Response
+    ) => {
+        const { business, period } = req.query;
+
+        const activities = getActivityList(period);
+
+        return Discount.find({ business })
+            .then((discounts) =>
+                Promise.all(
+                    activities.map(({ from, to, label }) =>
+                        Coupon.find({
+                            discount: { $in: discounts },
+                            redeemedAt: { $gte: from, $lte: to }
+                        })
+                            .countDocuments()
+                            .then((value) => ({ label, value }))
+                    )
+                ).then((_) => res.status(StatusCodes.OK).json(_))
+            )
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
 }
