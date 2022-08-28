@@ -1,7 +1,8 @@
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Business, IBusiness } from '@models';
+import { Business, IBusiness, BusinessView } from '@models';
 import { IController, ServerErrors } from '@types';
+import moment from 'moment';
 
 export class BusinessController implements IController {
     path: string = '/business';
@@ -13,6 +14,8 @@ export class BusinessController implements IController {
 
     private initRoutes() {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
+        this.router.post(`${this.path}/log-view`, this.logBusinessView);
+        this.router.get(`${this.path}/views`, this.getViews);
         this.router.post(`${this.path}/add-image`, this.addBusinessImage);
         this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
@@ -20,6 +23,41 @@ export class BusinessController implements IController {
         this.router.get(`${this.path}`, this.getBusiness);
         this.router.get(`${this.path}/search`, this.searchBusinessesByName);
     }
+
+    private readonly logBusinessView = async (
+        req: Request<{}, {}, { business: string; user: string }>,
+        res: Response
+    ) => {
+        const { business, user } = req.body;
+
+        return new BusinessView({
+            business,
+            user,
+            createdAt: moment(new Date()).startOf('day').toDate()
+        })
+            .save()
+            .then(() => res.status(StatusCodes.OK).json())
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly getViews = async (
+        req: Request<
+            {},
+            {},
+            {},
+            { business: string; period: 'day' | 'week' | 'month' }
+        >,
+        res: Response
+    ) => {
+        const { business, period } = req.query;
+
+        return BusinessView.find({
+            business,
+            createdAt: { $gte: moment(new Date()).startOf(period).toDate() }
+        })
+            .countDocuments()
+            .then((_) => res.status(StatusCodes.OK).json(_));
+    };
 
     private readonly getBusinesses = async (
         req: Request<{}, {}, { businessesIds: string[] }>,

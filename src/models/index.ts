@@ -9,3 +9,4 @@ export { FBToken, IFBToken } from './FBToken.model';
 export { Message, IMessage } from './Message.model';
 export { Chat, IChat } from './Chat.model';
 export { Discount, IDiscount } from './Discount.model';
+export { BusinessView, IBusinessView } from './BusinessView.model';
