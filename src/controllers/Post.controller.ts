@@ -56,7 +56,6 @@ export class PostController implements IController {
         res: Response
     ) => {
         const { post } = req.body;
-        console.log(post);
 
         return Post.findByIdAndDelete(post)
             .then((post) => {
