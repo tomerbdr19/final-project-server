@@ -14,7 +14,7 @@ export class PostController implements IController {
         this.router.get(`${this.path}`, this.getPosts);
         this.router.get(`${this.path}/recent`, this.getUserRecentPost);
         this.router.post(`${this.path}`, this.createPost);
-        this.router.delete(`${this.path}`, this.deletePost);
+        this.router.post(`${this.path}/delete`, this.deletePost);
     }
 
     private readonly getPosts = async (
@@ -52,17 +52,18 @@ export class PostController implements IController {
     };
 
     private readonly deletePost = async (
-        req: Request<{}, {}, {}, { postId: string }>,
+        req: Request<{}, {}, { post: string }>,
         res: Response
     ) => {
-        const { postId } = req.query;
+        const { post } = req.body;
+        console.log(post);
 
-        return Post.findByIdAndDelete(postId)
-            .then((doc) => {
-                if (!doc) {
+        return Post.findByIdAndDelete(post)
+            .then((post) => {
+                if (!post) {
                     return res.status(StatusCodes.NOT_FOUND);
                 }
-                return res.status(StatusCodes.OK);
+                return res.status(StatusCodes.OK).json(post);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };

@@ -12,13 +12,15 @@ export interface IChat extends IChatMethods, Document {
     business: ObjectId | IBusiness;
     updatedAt: Date;
     createdAt: Date;
+    status: 'new' | 'in-progress' | 'resolved'
 }
 
 const ChatSchema = new Schema<IChat>({
     user: { type: Types.ObjectId, ref: 'User', isRequired: true },
     business: { type: Types.ObjectId, ref: 'Business', isRequired: true },
     createdAt: { type: Date, default: new Date() },
-    updatedAt: { type: Date, default: new Date() }
+    updatedAt: { type: Date, default: new Date() },
+    status: { type: String, default: 'new' }
 });
 ChatSchema.index({ user: 1, business: 1 }, { unique: true });
 
@@ -30,14 +32,14 @@ ChatSchema.method('getChatMessages', function (): Promise<IMessage[]> {
         .then((messages) =>
             messages.map(
                 ({ id, content, senderType, createdAt, chat }) =>
-                    ({
-                        id,
-                        chat,
-                        createdAt,
-                        content,
-                        senderType,
-                        sender: senderType === 'user' ? user : business
-                    } as IMessage)
+                ({
+                    id,
+                    chat,
+                    createdAt,
+                    content,
+                    senderType,
+                    sender: senderType === 'user' ? user : business
+                } as IMessage)
             )
         );
 });

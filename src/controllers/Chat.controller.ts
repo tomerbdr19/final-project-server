@@ -40,7 +40,7 @@ export class ChatController implements IController {
         return Chat.find(filters)
             .sort({ updatedAt: -1 })
             .populate([
-                { path: 'user', select: ['name', 'imageUrl'] },
+                { path: 'user', select: ['name', 'imageUrl', "info"] },
                 { path: 'business', select: ['name', 'imageUrl'] }
             ])
             .exec()
@@ -56,7 +56,7 @@ export class ChatController implements IController {
 
         return Chat.findById(chatId)
             .populate([
-                { path: 'user', select: ['name', 'imageUrl'] },
+                { path: 'user', select: ['name', 'imageUrl', "info"] },
                 { path: 'business', select: ['name', 'imageUrl'] }
             ])
             .exec()
