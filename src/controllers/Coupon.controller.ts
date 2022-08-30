@@ -70,8 +70,11 @@ export class CouponController implements IController {
         res: Response
     ) => {
         const { user, discount } = req.body;
+        const business = await Discount.findById(discount).then(
+            (_) => _?.business
+        );
 
-        return (await new Coupon({ user, discount }).save())
+        return (await new Coupon({ user, discount, business }).save())
             .populate([
                 {
                     path: 'discount',

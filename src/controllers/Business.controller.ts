@@ -1,8 +1,15 @@
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Business, IBusiness, BusinessView } from '@models';
+import {
+    Business,
+    IBusiness,
+    BusinessView,
+    Subscription,
+    Coupon
+} from '@models';
 import { IController, ServerErrors } from '@types';
 import moment from 'moment';
+import { getAverageFromDate } from '@utils/aggregate';
 
 export class BusinessController implements IController {
     path: string = '/business';
@@ -16,6 +23,7 @@ export class BusinessController implements IController {
         this.router.post(`${this.path}/businesses`, this.getBusinesses);
         this.router.post(`${this.path}/log-view`, this.logBusinessView);
         this.router.get(`${this.path}/views`, this.getViews);
+        this.router.get(`${this.path}/statistics`, this.getStatistics);
         this.router.post(`${this.path}/add-image`, this.addBusinessImage);
         this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
@@ -57,6 +65,56 @@ export class BusinessController implements IController {
         })
             .countDocuments()
             .then((_) => res.status(StatusCodes.OK).json(_));
+    };
+
+    private readonly getStatistics = async (
+        req: Request<
+            {},
+            {},
+            {},
+            {
+                business: string;
+                period: 'day' | 'week' | 'month';
+                fromDate: string;
+            }
+        >,
+        res: Response
+    ) => {
+        const { business, period, fromDate: _fromDate } = req.query;
+
+        const fromDate = new Date(JSON.parse(_fromDate));
+
+        const viewsPromise = getAverageFromDate(
+            BusinessView,
+            period,
+            business,
+            fromDate
+        );
+        const subscribersPromise = getAverageFromDate(
+            Subscription,
+            period,
+            business,
+            fromDate
+        );
+        const couponsPromise = getAverageFromDate(
+            Coupon,
+            period,
+            business,
+            fromDate,
+            'redeemedAt'
+        );
+
+        return await Promise.all([
+            viewsPromise,
+            subscribersPromise,
+            couponsPromise
+        ])
+            .then(([views, subscriptions, coupons]) => {
+                return res
+                    .status(StatusCodes.OK)
+                    .json({ views, subscriptions, coupons });
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
 
     private readonly getBusinesses = async (
