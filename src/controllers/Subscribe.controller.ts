@@ -22,7 +22,7 @@ export class SubscribeController implements IController {
 
     private initRoutes() {
         this.router.get(`${this.path}`, this.getSubscriptions);
-        this.router.get(`${this.path}`, this.createSubscription);
+        this.router.post(`${this.path}`, this.createSubscription);
         this.router.get(`${this.path}/activity`, this.subscribersActivity);
         this.router.post(`${this.path}/filter`, this.getFilteredSubscriptions);
         this.router.post(`${this.path}/delete`, this.deleteSubscription);
@@ -141,18 +141,16 @@ export class SubscribeController implements IController {
             subscriptions.map(async (subscription) => {
                 const { user, business } = subscription;
 
+                if (!user || !business) {
+                    return {};
+                }
                 const userId = (user as IUser).id;
                 const businessId = (business as IBusiness).id;
 
-                const coupons = await Coupon.find({ user: userId })
-                    .populate('discount')
-                    .then((_) => {
-                        return _.filter(
-                            (coupon) =>
-                                businessId ==
-                                (coupon.discount as IDiscount).business
-                        );
-                    });
+                const coupons = await Coupon.find({
+                    user: userId,
+                    business: businessId
+                });
 
                 return {
                     user: subscription.user,
@@ -204,7 +202,6 @@ export class SubscribeController implements IController {
             })
         )
             .then((_) => {
-                console.log(_);
                 return res.status(StatusCodes.OK).json(_);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
