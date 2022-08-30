@@ -37,11 +37,6 @@ export const getAverageFromDate = async (
         ])
         .then((agg) => {
             let sum = 0;
-            console.log('🚀 ~ file: aggregate.ts ~ line 40 ~ .then ~ agg', agg);
-            console.log(
-                '🚀 ~ file: aggregate.ts ~ line 40 ~ .then ~ activity',
-                activityList
-            );
 
             agg.forEach((_) => {
                 sum += _.count;
