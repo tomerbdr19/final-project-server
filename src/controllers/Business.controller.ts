@@ -5,11 +5,14 @@ import {
     IBusiness,
     BusinessView,
     Subscription,
-    Coupon
+    Coupon,
+    Chat,
+    Discount
 } from '@models';
 import { IController, ServerErrors } from '@types';
 import moment from 'moment';
 import { getAverageFromDate } from '@utils/aggregate';
+import { Types } from 'mongoose';
 
 export class BusinessController implements IController {
     path: string = '/business';
@@ -24,6 +27,7 @@ export class BusinessController implements IController {
         this.router.post(`${this.path}/log-view`, this.logBusinessView);
         this.router.get(`${this.path}/views`, this.getViews);
         this.router.get(`${this.path}/statistics`, this.getStatistics);
+        this.router.get(`${this.path}/activity`, this.getActivities);
         this.router.post(`${this.path}/add-image`, this.addBusinessImage);
         this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
@@ -115,6 +119,116 @@ export class BusinessController implements IController {
                     .json({ views, subscriptions, coupons });
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly getActivities = async (
+        req: Request<
+            {},
+            {},
+            {},
+            {
+                business: string;
+            }
+        >,
+        res: Response
+    ) => {
+        const { business } = req.query;
+
+        const chatsPromise = Chat.aggregate<{
+            _id: { label: string };
+            value: number;
+        }>([
+            {
+                $match: { business: new Types.ObjectId(business) }
+            },
+            {
+                $group: {
+                    _id: { label: '$status' },
+                    value: { $sum: 1 }
+                }
+            }
+        ]).then((_) => ({
+            data: _.map(({ _id: { label }, value }) => ({ label, value }))
+        }));
+
+        const discountsPromise = Discount.aggregate([
+            {
+                $match: { business: new Types.ObjectId(business) }
+            },
+            {
+                $group: {
+                    _id: {
+                        label: {
+                            $cond: {
+                                if: { $lt: ['$expiredAt', new Date()] },
+                                then: 'expired',
+                                else: 'active'
+                            }
+                        }
+                    },
+                    value: { $sum: 1 }
+                }
+            }
+        ]).then((_) => ({
+            data: _.map(({ _id: { label }, value }: any) => ({ label, value }))
+        }));
+
+        return await Promise.all([
+            chatsPromise,
+            discountsPromise,
+            this.getDiscountsStatics(business)
+        ])
+            .then(([chats, discounts, discountsStatics]) => {
+                return res.status(StatusCodes.OK).json({
+                    chats,
+                    discounts: { ...discounts, ...discountsStatics }
+                });
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly getDiscountsStatics = (business: string) => {
+        return Coupon.aggregate<{
+            _id: string;
+            redeemed: number;
+            discount: any;
+            total: number;
+        }>([
+            {
+                $match: { business: new Types.ObjectId(business) }
+            },
+            {
+                $group: {
+                    _id: '$discount',
+                    redeemed: {
+                        $sum: {
+                            $cond: [{ $eq: ['$isRedeemed', true] }, 1, 0]
+                        }
+                    },
+                    total: { $sum: 1 }
+                }
+            },
+            {
+                $lookup: {
+                    from: Discount.collection.name,
+                    localField: '_id',
+                    foreignField: '_id',
+                    as: 'discount'
+                }
+            },
+            {
+                $unwind: '$discount'
+            },
+            {
+                $project: {
+                    _id: 0,
+                    'discount.business': 0
+                }
+            },
+            {
+                $sort: { redeemed: 1 }
+            }
+        ]).then((_) => ({ min: _[0], max: _[_.length - 1] }));
     };
 
     private readonly getBusinesses = async (
