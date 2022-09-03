@@ -13,7 +13,7 @@ import {
     DiscountController
 } from './controllers';
 
-const IS_DEV_MODE = true;
+const IS_DEV_MODE = process.env.NODE_ENV === 'dev';
 
 const app = new App(
     Number(process.env.PORT),
