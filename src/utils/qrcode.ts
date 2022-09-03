@@ -1,4 +1,5 @@
-import { QR_CODE_DIRECTORY_PATH, SERVER_URL_BASE } from '../constants';
+import 'dotenv/config';
+import { QR_CODE_DIRECTORY_PATH } from '../constants';
 import QRcode from 'qrcode';
 import fs from 'fs';
 
@@ -9,5 +10,5 @@ export const generateAndGetCouponQRCodeUrl = async (couponId: string) => {
         width: 200
     });
     setTimeout(() => fs.unlink(qrPath, () => {}), 10000);
-    return `${SERVER_URL_BASE}${couponId}.png`;
+    return `${process.env.BASE_URL || 'http://localhost:3000/'}${couponId}.png`;
 };

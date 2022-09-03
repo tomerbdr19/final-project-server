@@ -1,5 +1,5 @@
+import 'dotenv/config';
 import { IController, ServerErrors } from '@types';
-import { SERVER_URL_BASE } from '@constants';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { multerUpload } from '@utils/multer';
@@ -31,6 +31,10 @@ export class FileController implements IController {
 
         return res
             .status(StatusCodes.OK)
-            .json(`${SERVER_URL_BASE}${file.filename}`);
+            .json(
+                `${process.env.BASE_URL || 'http://localhost:3000/'}${
+                    file.filename
+                }`
+            );
     };
 }
