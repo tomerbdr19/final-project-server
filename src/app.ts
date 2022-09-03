@@ -34,6 +34,7 @@ export class App {
 
     private async initDB(mongoUrl: string) {
         await connect(mongoUrl, { ignoreUndefined: true });
+        console.log('🚀🚀 --> DB Connected');
     }
 
     public listen() {
