@@ -24,6 +24,7 @@ const CouponSchema = new Schema<ICoupon>({
 
 const methods: ICouponMethods = {};
 
+CouponSchema.index({ user: 1, discount: 1, business: 1 }, { unique: true });
 CouponSchema.method(methods);
 applyDefaultVirtuals(CouponSchema);
 

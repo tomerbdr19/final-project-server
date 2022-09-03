@@ -6,3 +6,4 @@ export { UserController } from './User.controller';
 export { FileController } from './File.controller';
 export { CouponController } from './Coupon.controller';
 export { ChatController } from './Chat.controller';
+export { DiscountController } from './Discount.controller';

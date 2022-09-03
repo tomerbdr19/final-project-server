@@ -7,14 +7,16 @@ export interface IPost extends IPostMethods, Document {
     business: ObjectId | IBusiness;
     caption: string;
     imageUrl: string;
+    discount: ObjectId | null;
     createdAt: Date;
 }
 
 const PostSchema = new Schema<IPost>({
     business: { type: Types.ObjectId, ref: 'Business' },
+    discount: { type: Types.ObjectId, ref: 'Discount', default: null },
     caption: { type: String },
     imageUrl: { type: String },
-    createdAt: { type: Date }
+    createdAt: { type: Date, default: new Date() }
 });
 
 const methods: IPostMethods = {};

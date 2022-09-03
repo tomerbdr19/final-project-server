@@ -27,13 +27,8 @@ export class CouponController implements IController {
         const { user } = req.query;
 
         return Coupon.find({ user })
-            .populate([
-                {
-                    path: 'discount',
-                    populate: { path: 'business', select: ['name', 'imageUrl'] }
-                },
-                { path: 'user', select: 'id' }
-            ])
+            .populate('user')
+            .populate({ path: 'discount', populate: { path: 'business' } })
             .exec()
             .then((coupons) => {
                 if (!coupons) {
@@ -70,18 +65,25 @@ export class CouponController implements IController {
         res: Response
     ) => {
         const { user, discount } = req.body;
+
         const business = await Discount.findById(discount).then(
             (_) => _?.business
         );
 
-        return (await new Coupon({ user, discount, business }).save())
-            .populate([
-                {
-                    path: 'discount',
-                    populate: { path: 'business', select: ['name', 'imageUrl'] }
-                },
-                { path: 'user', select: 'id' }
-            ])
+        return new Coupon({ user, discount, business })
+            .save()
+            .then((_) =>
+                _.populate([
+                    {
+                        path: 'discount',
+                        populate: {
+                            path: 'business',
+                            select: ['name', 'imageUrl']
+                        }
+                    },
+                    { path: 'user', select: 'id' }
+                ])
+            )
             .then((coupon) => res.status(StatusCodes.OK).json(coupon))
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
