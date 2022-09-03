@@ -60,7 +60,12 @@ export class ChatController implements IController {
     };
 
     private readonly getAllChats = async (
-        req: Request<{}, {}, {}, { user: string; business: string }>,
+        req: Request<
+            {},
+            {},
+            {},
+            { user: string; business: string; status: string }
+        >,
         res: Response
     ) => {
         const filters = getTruthyFilters(req.query);
