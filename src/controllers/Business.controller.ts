@@ -13,6 +13,7 @@ import { IController, ServerErrors } from '@types';
 import moment from 'moment';
 import { getAverageFromDate } from '@utils/aggregate';
 import { Types } from 'mongoose';
+import { Product } from '@models/Product.model';
 
 export class BusinessController implements IController {
     path: string = '/business';
@@ -28,6 +29,10 @@ export class BusinessController implements IController {
         this.router.get(`${this.path}/views`, this.getViews);
         this.router.get(`${this.path}/statistics`, this.getStatistics);
         this.router.get(`${this.path}/activity`, this.getActivities);
+        this.router.get(`${this.path}/products`, this.getProducts);
+        this.router.post(`${this.path}/product`, this.addProduct);
+        this.router.post(`${this.path}/delete-product`, this.deleteProduct);
+        this.router.post(`${this.path}/product-price`, this.updateProductPrice);
         this.router.post(`${this.path}/add-image`, this.addBusinessImage);
         this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
@@ -69,6 +74,65 @@ export class BusinessController implements IController {
         })
             .countDocuments()
             .then((_) => res.status(StatusCodes.OK).json(_));
+    };
+
+    private readonly getProducts = async (
+        req: Request<{}, {}, {}, { business: string }>,
+        res: Response
+    ) => {
+        const { business } = req.query;
+
+        return Product.find({
+            business
+        })
+            .then((products) => res.status(200).json(products))
+            .catch(() => res.status(500).json());
+    };
+
+    private readonly addProduct = async (
+        req: Request<
+            {},
+            {},
+            { business: string; name: string; imageUrl: string; price: string }
+        >,
+        res: Response
+    ) => {
+        const { business, name, imageUrl, price } = req.body;
+
+        return new Product({ business, name, imageUrl, price })
+            .save()
+            .then((product) => res.status(200).json(product))
+            .catch(() => res.status(500).json());
+    };
+
+    private readonly deleteProduct = async (
+        req: Request<{}, {}, { business: string; product: string }>,
+        res: Response
+    ) => {
+        const { business, product } = req.body;
+
+        return Product.deleteOne({ business, _id: product })
+            .then((product) => res.status(200).json(product))
+            .catch(() => res.status(500).json());
+    };
+
+    private readonly updateProductPrice = async (
+        req: Request<
+            {},
+            {},
+            { product: string; business: string; price: string }
+        >,
+        res: Response
+    ) => {
+        const { price, business, product } = req.body;
+
+        return Product.updateOne(
+            { business, _id: product },
+            { price },
+            { new: true }
+        )
+            .then((product) => res.status(200).json(product))
+            .catch(() => res.status(500).json());
     };
 
     private readonly getStatistics = async (
