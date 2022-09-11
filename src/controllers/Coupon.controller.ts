@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Coupon, Discount } from '@models';
 import { generateAndGetCouponQRCodeUrl } from '@utils/qrcode';
 import { getActivityList } from '@utils/activity';
+import moment from 'moment';
 
 export class CouponController implements IController {
     path: string = '/coupon';
@@ -18,6 +19,7 @@ export class CouponController implements IController {
         this.router.post(`${this.path}`, this.createCoupon);
         this.router.get(`${this.path}/redeem-qr-code`, this.getRedeemQRCode);
         this.router.get(`${this.path}/activity`, this.couponsActivity);
+        this.router.get(`${this.path}/b`, this.bla);
     }
 
     private readonly getCoupons = async (
@@ -36,6 +38,29 @@ export class CouponController implements IController {
                 }
 
                 return res.status(StatusCodes.OK).json(coupons);
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly bla = async (
+        req: Request<{}, {}, {}, { user: string }>,
+        res: Response
+    ) => {
+        return Coupon.find({ discount: '6317a04cdf111c5d2a293264' })
+            .then(async (coupons) => {
+                coupons.forEach(async (coupon, index) => {
+                    if (index % 5 !== 0) {
+                        const day = Math.random() * 10 * 6;
+
+                        const date = moment(new Date()).subtract(day, 'day');
+                        await Coupon.findByIdAndUpdate(coupon.id, {
+                            isRedeemed: true,
+                            redeemedAt: date
+                        });
+                    }
+
+                    return res.status(200).json();
+                });
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };

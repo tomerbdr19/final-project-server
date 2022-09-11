@@ -1,8 +1,10 @@
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Chat, Message, IMessage } from '@models';
+import { Chat, Message, IMessage, Business, User } from '@models';
 import { IController, ServerErrors } from '@types';
 import { getTruthyFilters } from '@utils/filter';
+import axios from 'axios';
+import { SIGNALR_SERVER_PATH } from '@constants';
 
 export class ChatController implements IController {
     path: string = '/chat';
@@ -116,10 +118,32 @@ export class ChatController implements IController {
         return new Message({ sender, senderType, chat, content })
             .save()
             .then(async (message) => {
-                await Chat.findByIdAndUpdate(chat, {
+                const chatDoc = await Chat.findByIdAndUpdate(chat, {
                     updatedAt: message.createdAt
                 });
-                return res.status(StatusCodes.OK).json(message);
+
+                const senderDetails = await (senderType === 'business'
+                    ? Business.findById(sender)
+                    : User.findById(sender));
+
+                const SendToId =
+                    senderType === 'business'
+                        ? chatDoc?.user
+                        : chatDoc?.business;
+
+                const msg = {
+                    sender: senderDetails,
+                    senderType,
+                    chat,
+                    content
+                };
+
+                await axios.post(`${SIGNALR_SERVER_PATH}sendMessage`, {
+                    SendToId,
+                    Data: msg
+                });
+
+                return res.status(StatusCodes.OK).json(msg);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
