@@ -23,6 +23,7 @@ type BusinessTheme = {
 interface IBusinessMethods {}
 export interface IBusiness extends IBusinessMethods, Document {
     imageUrl: string;
+    bgUrl: string;
     name: string;
     images: string[];
     info: BusinessInfo;
@@ -31,6 +32,7 @@ export interface IBusiness extends IBusinessMethods, Document {
 
 const BusinessSchema = new Schema<IBusiness>({
     imageUrl: { type: String },
+    bgUrl: { type: String },
     name: { type: String },
     images: [{ type: String }],
     info: {

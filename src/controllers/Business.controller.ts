@@ -34,6 +34,7 @@ export class BusinessController implements IController {
         this.router.post(`${this.path}/delete-product`, this.deleteProduct);
         this.router.post(`${this.path}/product-price`, this.updateProductPrice);
         this.router.post(`${this.path}/add-image`, this.addBusinessImage);
+        this.router.post(`${this.path}/add-bg-url`, this.setBgUrl);
         this.router.post(`${this.path}/delete-image`, this.deleteBusinessImage);
         this.router.post(`${this.path}`, this.updateBusiness);
         this.router.post(`${this.path}/theme`, this.updateBusinessTheme);
@@ -132,6 +133,17 @@ export class BusinessController implements IController {
             { new: true }
         )
             .then((product) => res.status(200).json(product))
+            .catch(() => res.status(500).json());
+    };
+
+    private readonly setBgUrl = async (
+        req: Request<{}, {}, { business: string; bgUrl: string }>,
+        res: Response
+    ) => {
+        const { business, bgUrl } = req.body;
+
+        return Business.findByIdAndUpdate(business, { bgUrl }, { new: true })
+            .then((business) => res.status(200).json(business))
             .catch(() => res.status(500).json());
     };
 
