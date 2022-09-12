@@ -59,7 +59,12 @@ export class ChatController implements IController {
     };
 
     private readonly getAllChats = async (
-        req: Request<{}, {}, {}, { user: string; business: string }>,
+        req: Request<
+            {},
+            {},
+            {},
+            { user: string; business: string; status: string }
+        >,
         res: Response
     ) => {
         const filters = getTruthyFilters(req.query);
@@ -138,10 +143,12 @@ export class ChatController implements IController {
                     content
                 };
 
-                await axios.post(`${SIGNALR_SERVER_PATH}sendMessage`, {
-                    SendToId,
-                    Data: msg
-                });
+                await axios
+                    .post(`${SIGNALR_SERVER_PATH}sendMessage`, {
+                        SendToId,
+                        Data: msg
+                    })
+                    .catch(() => console.log('signalR error'));
 
                 return res.status(StatusCodes.OK).json(msg);
             })

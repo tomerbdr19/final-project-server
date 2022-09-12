@@ -5,6 +5,8 @@ import { Coupon, Discount } from '@models';
 import { generateAndGetCouponQRCodeUrl } from '@utils/qrcode';
 import { getActivityList } from '@utils/activity';
 import moment from 'moment';
+import axios from 'axios';
+import { SIGNALR_SERVER_PATH } from '@constants';
 
 export class CouponController implements IController {
     path: string = '/coupon';
@@ -17,6 +19,7 @@ export class CouponController implements IController {
     private initRoutes() {
         this.router.get(`${this.path}`, this.getCoupons);
         this.router.post(`${this.path}`, this.createCoupon);
+        this.router.post(`${this.path}/redeem`, this.redeemCoupon);
         this.router.get(`${this.path}/redeem-qr-code`, this.getRedeemQRCode);
         this.router.get(`${this.path}/activity`, this.couponsActivity);
         this.router.get(`${this.path}/b`, this.bla);
@@ -71,7 +74,14 @@ export class CouponController implements IController {
     ) => {
         const { coupon } = req.query;
 
-        return Coupon.exists({ _id: coupon })
+        const generateCode = () =>
+            ['', '', '', '']
+                .map(() => Math.round(Math.random() * 9).toString())
+                .join('');
+
+        const redeemCode = generateCode();
+
+        return Coupon.findOneAndUpdate({ _id: coupon }, { redeemCode })
             .then(async (_) => {
                 if (!_) {
                     return res
@@ -79,8 +89,34 @@ export class CouponController implements IController {
                         .json(ServerErrors.NOT_FOUND);
                 }
 
-                const QRUrl = await generateAndGetCouponQRCodeUrl(coupon);
-                return res.status(200).json(QRUrl);
+                const qrUrl = await generateAndGetCouponQRCodeUrl(redeemCode);
+                return res.status(200).json({ qrUrl, redeemCode });
+            })
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
+    };
+
+    private readonly redeemCoupon = async (
+        req: Request<{}, {}, { business: string; code: string }>,
+        res: Response
+    ) => {
+        const { business, code } = req.body;
+
+        return Coupon.findOneAndUpdate(
+            { business, redeemCode: code },
+            { redeemedAt: new Date(), isRedeemed: true, redeemCode: null }
+        )
+            .then(async (coupon) => {
+                if (!coupon) {
+                    return res.status(400).json();
+                }
+
+                await axios
+                    .post(`${SIGNALR_SERVER_PATH}redeemCoupon`, {
+                        SendToId: coupon.user
+                    })
+                    .catch(() => console.log('signalR error'));
+
+                return res.status(200).json(coupon);
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
