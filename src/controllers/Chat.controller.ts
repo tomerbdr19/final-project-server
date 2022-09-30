@@ -19,6 +19,7 @@ export class ChatController implements IController {
         this.router.post(`${this.path}/status`, this.setChatStatus);
         this.router.post(`${this.path}/message`, this.sendMessage);
         this.router.get(`${this.path}/all`, this.getAllChats);
+        this.router.get(`${this.path}`, this.getChat);
         this.router.get(`${this.path}/messages`, this.getChatMessages);
     }
 
@@ -77,6 +78,35 @@ export class ChatController implements IController {
             ])
             .exec()
             .then((chats) => res.status(StatusCodes.OK).json(chats))
+            .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
+    };
+
+    private readonly getChat = async (
+        req: Request<{}, {}, {}, { user: string; business: string }>,
+        res: Response
+    ) => {
+        const { user, business } = req.query;
+
+        return Chat.findOne({ user, business })
+            .populate([
+                { path: 'user', select: ['name', 'imageUrl', 'info'] },
+                { path: 'business', select: ['name', 'imageUrl'] }
+            ])
+            .then(async (chat) => {
+                if (!chat) {
+                    return await (
+                        await new Chat({ user, business }).save()
+                    ).populate([
+                        {
+                            path: 'user',
+                            select: ['name', 'imageUrl', 'info']
+                        },
+                        { path: 'business', select: ['name', 'imageUrl'] }
+                    ]);
+                }
+                return chat;
+            })
+            .then((chat) => res.status(StatusCodes.OK).json(chat))
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR));
     };
 

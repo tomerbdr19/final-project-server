@@ -11,6 +11,6 @@ export const generateAndGetCouponQRCodeUrl = async (redeemCode: string) => {
     });
     setTimeout(() => fs.unlink(qrPath, () => {}), 10000);
     return `${
-        process.env.BASE_URL || 'http://localhost:3000/'
+        process.env.BASE_URL || 'http://10.0.2.2:3000/'
     }${redeemCode}.png`;
 };

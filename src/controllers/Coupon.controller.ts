@@ -34,13 +34,16 @@ export class CouponController implements IController {
         return Coupon.find({ user })
             .populate('user')
             .populate({ path: 'discount', populate: { path: 'business' } })
+            .sort({ createdAt: -1 })
             .exec()
             .then((coupons) => {
                 if (!coupons) {
                     return res.status(StatusCodes.INTERNAL_SERVER_ERROR);
                 }
 
-                return res.status(StatusCodes.OK).json(coupons);
+                return res
+                    .status(StatusCodes.OK)
+                    .json(coupons.filter((_) => _.discount !== null));
             })
             .catch(() => res.status(StatusCodes.INTERNAL_SERVER_ERROR).json());
     };
